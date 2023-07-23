@@ -1,0 +1,59 @@
+name: Rust
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/rust.yml'
+      - 'src/**.rs'
+      - 'tests/**'
+      - 'Cargo.toml'
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - '**'
+    paths:
+      - '.github/workflows/rust.yml'
+      - 'src/**.rs'
+      - 'tests/**'
+      - 'Cargo.toml'
+
+jobs:
+  full-test:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    services:
+        redis:
+            image: redis:alpine
+            ports:
+              - 6379:6379
+            # Set health checks to wait until redis has started
+            options: >-
+              --health-cmd "redis-cli ping"
+              --health-interval 10s
+              --health-timeout 5s
+              --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Install Rust Unix
+      run: |
+        if rustup --version >/dev/null 2>&1; then
+            rustup update
+        else
+             curl https://sh.rustup.rs -sSf | sh -s -- -y --profile minimal --default-toolchain stable
+             echo ::add-path::$HOME/.cargo/bin
+        fi
+
+    - name: Rust version
+      run: |
+        cargo --version
+        rustc --version
+
+    - name: Check build
+      run: cargo check
+
+    - name: Tests
+      run: cargo test

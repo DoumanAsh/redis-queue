@@ -6,6 +6,7 @@ use redis::{Cmd, ToRedisArgs, RedisError, FromRedisValue};
 use redis::aio::ConnectionManager;
 
 use crate::types::{idents, RedisType, TimestampId, StreamId, TrimMethod, GroupInfo, PendingStats, EntryValue, PendingEntry, PendingParams, PendingParamsConfig, FetchParams, FetchParamsConfig, FetchResult};
+use crate::iters::{FetchIter, PendingIter};
 
 #[derive(Clone)]
 ///Queue configuration
@@ -229,6 +230,22 @@ impl Queue {
                 entries: Vec::new(),
             }),
         }
+    }
+
+    #[inline(always)]
+    ///Creates new fetch iterator.
+    ///
+    ///This is just useful utility when there is no need to change `params` at runtime.
+    pub fn fetch_iter<'a>(&self, params: FetchParams<'a>) -> FetchIter<'a> {
+        FetchIter::new(params, self.clone())
+    }
+
+    #[inline(always)]
+    ///Creates new pending info iterator.
+    ///
+    ///This is just useful utility when there is no need to change `params` at runtime.
+    pub fn pending_iter<'a>(&self, params: PendingParams<'a>) -> PendingIter<'a> {
+        PendingIter::new(params, self.clone())
     }
 }
 

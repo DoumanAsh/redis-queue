@@ -5,6 +5,7 @@
 
 pub use redis;
 
+pub mod iters;
 pub mod types;
 mod queue;
 pub use queue::{Queue, QueueConfig};

@@ -1,6 +1,7 @@
 //!Redis queue utilities
 
-use crate::{Queue, TrimMethod};
+use crate::queue::Queue;
+use crate::types::TrimMethod;
 
 use core::time;
 

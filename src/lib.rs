@@ -5,8 +5,7 @@
 
 pub use redis;
 
-mod types;
-pub use types::{TimestampId, StreamId, TrimMethod, GroupInfo, PendingStats, EntryValue, PendingParams, PendingEntry, FetchType, FetchParams, FetchResult, Entry, RangeIdx, Range};
+pub mod types;
 mod queue;
 pub use queue::{Queue, QueueConfig};
 pub mod utils;

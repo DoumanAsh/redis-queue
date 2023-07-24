@@ -1,5 +1,6 @@
 use redis_queue::utils::queue_trim_consumed;
-use redis_queue::{EntryValue, FetchParams, FetchType, PendingParams, Queue, QueueConfig, Range, RangeIdx, TimestampId};
+use redis_queue::{Queue, QueueConfig};
+use redis_queue::types::{EntryValue, FetchParams, FetchType, PendingParams, Range, RangeIdx, TimestampId};
 
 use core::time;
 

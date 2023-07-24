@@ -1,3 +1,5 @@
+//!Various data types to supplement queue interface
+
 use core::{fmt, time, cmp};
 use core::str::FromStr;
 use core::convert::TryInto;
@@ -6,7 +8,7 @@ use redis::{self, FromRedisValue, ErrorKind, Value, RedisResult, RedisError, Red
 
 use crate::queue::QueueConfig;
 
-pub mod idents {
+pub(crate) mod idents {
     macro_rules! define_term {
         ($($ident:ident),+) => {
             $(
@@ -59,41 +61,9 @@ macro_rules! unwrap_required_field {
     };
 }
 
-#[derive(Debug, Copy, Clone)]
-///Trimming method
-pub enum TrimMethod {
-    ///Request to clean exceeding specified number of elements.
-    MaxLen(u64),
-    ///Request to clean entries below specified id.
-    ///
-    ///Supported since Redis 6.2
-    MinId(StreamId),
-}
-
-impl ToRedisArgs for TrimMethod {
-    #[inline(always)]
-    fn write_redis_args<W: ?Sized + redis::RedisWrite>(&self, out: &mut W) {
-        match self {
-            Self::MaxLen(threshold) => {
-                idents::MAXLEN.write_redis_args(out);
-                threshold.write_redis_args(out);
-            }
-            Self::MinId(id) => {
-                idents::MINID.write_redis_args(out);
-                id.write_redis_args(out);
-            }
-        }
-    }
-
-    #[inline(always)]
-    fn is_single_arg(&self) -> bool {
-        false
-    }
-}
-
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 ///Possible types returned by `TYPE` command
-pub enum RedisType {
+pub(crate) enum RedisType {
     ///String
     String,
     ///List
@@ -159,6 +129,38 @@ impl FromRedisValue for RedisType {
             Ok(value) => Self::parse(value).map(|val| vec![val]),
             Err(_) => None,
         }
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+///Trimming method
+pub enum TrimMethod {
+    ///Request to clean exceeding specified number of elements.
+    MaxLen(u64),
+    ///Request to clean entries below specified id.
+    ///
+    ///Supported since Redis 6.2
+    MinId(StreamId),
+}
+
+impl ToRedisArgs for TrimMethod {
+    #[inline(always)]
+    fn write_redis_args<W: ?Sized + redis::RedisWrite>(&self, out: &mut W) {
+        match self {
+            Self::MaxLen(threshold) => {
+                idents::MAXLEN.write_redis_args(out);
+                threshold.write_redis_args(out);
+            }
+            Self::MinId(id) => {
+                idents::MINID.write_redis_args(out);
+                id.write_redis_args(out);
+            }
+        }
+    }
+
+    #[inline(always)]
+    fn is_single_arg(&self) -> bool {
+        false
     }
 }
 

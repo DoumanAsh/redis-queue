@@ -59,4 +59,4 @@ jobs:
       run: cargo check --features manager
 
     - name: Tests
-      run: cargo test --features manager -- --test-threads=1
+      run: cargo test --features manager

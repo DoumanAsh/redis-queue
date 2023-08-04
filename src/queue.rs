@@ -5,7 +5,7 @@ use std::borrow::Cow;
 use redis::{Cmd, ToRedisArgs, RedisError, FromRedisValue};
 use redis::aio::ConnectionManager;
 
-use crate::types::{idents, RedisType, TimestampId, StreamId, TrimMethod, GroupInfo, PendingStats, EntryValue, PendingEntry, PendingParams, PendingParamsConfig, FetchParams, FetchParamsConfig, FetchResult};
+use crate::types::{idents, RedisType, TimestampId, StreamId, TrimMethod, GroupInfo, PendingStats, EntryValue, PendingEntry, PendingParams, PendingParamsConfig, FetchParams, FetchParamsConfig, FetchResult, FetchEntries};
 use crate::iters::{FetchIter, PendingIter};
 
 #[derive(Clone)]
@@ -227,6 +227,35 @@ impl Queue {
             Some((res,)) => Ok(res),
             None => Ok(FetchResult {
                 stream: args.config.stream.clone().into_owned(),
+                entries: Vec::new(),
+            }),
+        }
+    }
+
+    ///Attempts to fetch message from within queue.
+    ///
+    ///By new it means messages that are not read yet.
+    ///
+    ///Once message is read, it is added as pending to group, according to configuration.
+    ///
+    ///When processing is finished, user must acknowledge ids to remove them from pending group.
+    ///Until then these messages can be always re-fetched.
+    pub async fn fetch_entries<T: FromRedisValue>(&self, params: &FetchParams<'_>) -> Result<FetchEntries<T>, redis::RedisError> {
+        let mut conn = self.connection();
+
+        //Despite its name, `Cmd::arg` can be one or multiple arguments
+        //So we can encode everything using ToRedisArgs
+        let args = FetchParamsConfig {
+            params,
+            config: &self.config,
+        };
+        let mut cmd = Cmd::new();
+        cmd.arg(idents::XREADGROUP).arg(&args);
+
+        //If there are no messages, it returns NIL so handle it by returning result with empty entires to avoid extra Option indirection
+        match cmd.query_async::<_, Option<(FetchEntries<T>,)>>(&mut conn).await? {
+            Some((res,)) => Ok(res),
+            None => Ok(FetchEntries {
                 entries: Vec::new(),
             }),
         }

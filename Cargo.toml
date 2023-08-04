@@ -15,6 +15,11 @@ include = [
     "LICENSE",
 ]
 
+[features]
+# Enables code with queue processing
+# Should be used by application that wants to process items in queue
+manager = []
+
 [dependencies.redis]
 version = "0.23"
 default-features = false
@@ -46,4 +51,14 @@ features = ["v4"]
 [dev-dependencies.tokio]
 version = "1"
 default-features = false
-features = ["rt", "net", "time", "macros", "test-util"]
+features = ["rt", "rt-multi-thread", "net", "time", "macros", "test-util"]
+
+[dev-dependencies.tracing-subscriber]
+version = "0.3"
+
+[[test]]
+name = "manager"
+required-features = ["manager"]
+
+[package.metadata.docs.rs]
+features = ["manager"]

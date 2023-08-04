@@ -55,5 +55,8 @@ jobs:
     - name: Check build
       run: cargo check
 
+    - name: Check build with feature manager
+      run: cargo check --features manager
+
     - name: Tests
-      run: cargo test
+      run: cargo test --features manager -- --test-threads=1

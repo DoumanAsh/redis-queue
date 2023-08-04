@@ -981,11 +981,42 @@ impl<T: FromRedisValue> FromRedisValue for FetchResult<T> {
                         entries: Vec::<Entry<T>>::from_redis_value(&values[1])?,
                     })
                 } else {
-                    Err((
-                        redis::ErrorKind::TypeError,
-                        "Invalid number of values in entry, should be 2",
-                    )
-                        .into())
+                    Err((redis::ErrorKind::TypeError, "Invalid number of values in entry, should be 2").into())
+                }
+            }
+            Value::Data(_) => Err((redis::ErrorKind::TypeError, "Not a stream entry").into()),
+            Value::Nil => Err((redis::ErrorKind::TypeError, "unexpected null").into()),
+            Value::Int(_) => Err((redis::ErrorKind::TypeError, "unexpected Integer").into()),
+            Value::Okay => Err((redis::ErrorKind::TypeError, "unexpected OK").into()),
+            Value::Status(_) => Err((redis::ErrorKind::TypeError, "unexpected status").into()),
+        }
+    }
+
+    fn from_byte_vec(_vec: &[u8]) -> Option<Vec<Self>> {
+        None
+    }
+}
+
+///Result of fetch operation.
+pub struct FetchEntries<T> {
+    ///Stream's content
+    pub entries: Vec<Entry<T>>,
+}
+
+impl<T: FromRedisValue> FromRedisValue for FetchEntries<T> {
+    fn from_redis_value(value: &Value) -> RedisResult<Self> {
+        match value {
+            //Map of values is always encoded as sequence of items
+            Value::Bulk(values) => {
+                //Stream is always consist of 2 parts:
+                //1. Identifier
+                //2. Values
+                if values.len() == 2 {
+                    Ok(Self {
+                        entries: Vec::<Entry<T>>::from_redis_value(&values[1])?,
+                    })
+                } else {
+                    Err((redis::ErrorKind::TypeError, "Invalid number of values in entry, should be 2").into())
                 }
             }
             Value::Data(_) => Err((redis::ErrorKind::TypeError, "Not a stream entry").into()),

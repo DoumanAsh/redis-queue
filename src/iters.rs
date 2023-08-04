@@ -2,7 +2,7 @@
 
 use core::time;
 
-use crate::types::{RangeIdx, TimestampId, FetchType, FetchParams, FetchResult, PendingParams, PendingEntry, StreamId};
+use crate::types::{RangeIdx, TimestampId, FetchType, FetchParams, FetchResult, PendingParams, PendingEntry, StreamId, Entry};
 use crate::queue::Queue;
 
 use redis::{RedisError, FromRedisValue};
@@ -67,6 +67,28 @@ impl<'a> FetchIter<'a> {
             }
         }
         Ok(result)
+    }
+
+    ///Performs fetch, returning messages depending on `FetchParams::typ`.
+    ///
+    ///If pending messages are fetched, moves cursor to last pending message after fetched messages.
+    ///
+    ///We fetch our task as raw bytes to ensure we can always get it, regardless how it was
+    ///serialized.
+    ///
+    ///Differently from `next` it returns only list of entries
+    pub async fn next_entries<T: FromRedisValue>(&mut self) -> Result<Vec<Entry<T>>, RedisError> {
+        let result = self.queue.fetch_entries(&self.params).await?;
+        match self.params.typ {
+            FetchType::New => (),
+            FetchType::Pending | FetchType::After(_) => {
+                if let Some(entry) = result.entries.last() {
+                    self.params.typ = FetchType::After(entry.id);
+                }
+            }
+        }
+
+        Ok(result.entries)
     }
 }
 

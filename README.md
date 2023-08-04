@@ -5,3 +5,7 @@
 [![Documentation](https://docs.rs/redis-queue/badge.svg)](https://docs.rs/crate/redis-queue/)
 
 Redis based task queue
+
+## Features
+
+- `manager` - Enables `manager` module to provide utilities to process tasks within queue

@@ -12,10 +12,10 @@
 //! use redis_queue::types::Entry;
 //! use redis_queue::manager::{Manager, ManagerConfig, ConsumerKind, RunParams, manage};
 //! use redis_queue::manager::dispatch::{Dispatch, TaskResult, TaskResultKind};
-//! use redis_queue::manager::run::{RunParams, manage};
 //!
 //! use core::future::Future;
 //! use core::pin::Pin;
+//! use core::time;
 //!
 //! use tokio::sync::oneshot;
 //!
@@ -23,7 +23,7 @@
 //! struct TaskDispatcher {
 //! }
 //!
-//! impl Dispatch for MockDispatcher {
+//! impl Dispatch for TaskDispatcher {
 //!     type PayloadType = String;
 //!     type Future = Pin<Box<dyn Future<Output = TaskResult<String>> + Send + Sync + 'static>>;
 //!     fn send(&self, entry: Entry<Self::PayloadType>) -> Self::Future {
@@ -54,7 +54,7 @@
 //!         kind: ConsumerKind::Single,
 //!         //This is unique consumer name.
 //!         //Every instance of manager should have own name to avoid clashes
-//!         consumer: "consumer-name",
+//!         consumer: "consumer-name".into(),
 //!         //This is maximum time manager is allowed to block waiting for new messages in queue
 //!         poll_time: time::Duration::from_secs(10),
 //!         //This is maximum time task that temporary failed will remain in queue.
@@ -77,7 +77,7 @@
 //!
 //!     //then if you want to shutdown gracefully:
 //!     shutdown.send(()).expect("manager lives");
-//!     runner.await.expect("finish successfully");
+//!     handle.await.expect("finish successfully");
 //! }
 //! ```
 

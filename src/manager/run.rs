@@ -142,6 +142,7 @@ pub async fn manage<T: Dispatch>(params: RunParams<T>) where T::Future: Future<O
 
         scheduler.on_redis_recovery();
 
+        #[allow(clippy::never_loop)]
         //Re-visit failed tasks to see if we should re-try new ones
         'failed_tasks: loop {
             let mut pending = manager.pending_tasks(max_task_count, None);

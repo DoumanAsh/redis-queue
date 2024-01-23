@@ -12,7 +12,7 @@ pub(crate) mod idents {
     macro_rules! define_term {
         ($($ident:ident),+) => {
             $(
-                pub const $ident: &str = stringify!($ident);
+                pub const $ident: &'static str = stringify!($ident);
             )+
         };
     }
@@ -334,6 +334,7 @@ impl fmt::Debug for StreamId {
 }
 
 impl PartialOrd for StreamId {
+    #[allow(clippy::non_canonical_partial_ord_impl)]
     #[inline(always)]
     fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
         PartialOrd::partial_cmp(&(self.timestamp, self.seq), &(other.timestamp, other.seq))
@@ -436,10 +437,10 @@ pub struct GroupInfo {
 }
 
 impl GroupInfo {
-    const USER_FIELD_NAME: &str = "name";
-    const USER_FIELD_CONSUMERS: &str = "consumers";
-    const USER_FIELD_PENDING: &str = "pending";
-    const USER_FIELD_LAST_DELIVERED_ID: &str = "last-delivered-id";
+    const USER_FIELD_NAME: &'static str = "name";
+    const USER_FIELD_CONSUMERS: &'static str = "consumers";
+    const USER_FIELD_PENDING: &'static str = "pending";
+    const USER_FIELD_LAST_DELIVERED_ID: &'static str = "last-delivered-id";
 }
 
 impl FromRedisValue for GroupInfo {
@@ -583,8 +584,8 @@ pub struct EntryValue<T> {
 }
 
 impl<T> EntryValue<T> {
-    const USER_FIELD_ID: &str = "id";
-    const USER_FIELD_DATA: &str = "payload";
+    const USER_FIELD_ID: &'static str = "id";
+    const USER_FIELD_DATA: &'static str = "payload";
 }
 
 impl<T: FromRedisValue> FromRedisValue for EntryValue<T> {

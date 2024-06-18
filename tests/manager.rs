@@ -82,7 +82,7 @@ async fn create_queue(suffix: &str) -> Queue {
     let stream = format!("stream{suffix}").into();
     let config = QueueConfig { stream };
     let client = redis::Client::open("redis://127.0.0.1/").expect("to create redis client");
-    let conn = client.get_tokio_connection_manager().await.expect("to get connection");
+    let conn = client.get_connection_manager().await.expect("to get connection");
     Queue::new(config, conn)
 }
 

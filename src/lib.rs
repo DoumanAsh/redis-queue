@@ -5,7 +5,7 @@
 //! - `manager` - Enables `manager` module to provide utilities to process tasks within queue
 
 #![warn(missing_docs)]
-#![cfg_attr(feature = "cargo-clippy", allow(clippy::style))]
+#![allow(clippy::style)]
 
 pub use redis;
 

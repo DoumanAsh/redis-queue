@@ -4,7 +4,7 @@ use core::{fmt, time, cmp};
 use core::str::FromStr;
 use core::convert::TryInto;
 
-use redis::{self, FromRedisValue, ErrorKind, Value, RedisResult, RedisError, RedisWrite, ToRedisArgs};
+use redis::{FromRedisValue, ErrorKind, Value, RedisResult, RedisError, RedisWrite, ToRedisArgs};
 
 use crate::queue::QueueConfig;
 

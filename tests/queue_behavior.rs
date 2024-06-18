@@ -13,7 +13,7 @@ async fn verify_redis_behavior() {
     let config = QueueConfig { stream: STREAM.into() };
 
     let client = redis::Client::open("redis://127.0.0.1/").expect("to create redis client");
-    let conn = client.get_tokio_connection_manager().await.expect("to get connection");
+    let conn = client.get_connection_manager().await.expect("to get connection");
     let queue = Queue::new(config, conn);
 
     let result = queue.time().await.expect("get time");
